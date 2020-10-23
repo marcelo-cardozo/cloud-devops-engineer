@@ -1,0 +1,13 @@
+Description:
+    Marcelo Cardozo
+Resources:
+    # Stack: group of resources deployed
+    TestVpcx:
+        # Type: specifies the actual hardware to be used
+        Type: AWS::EC2::VPC
+        # Properties: configurations of the resource
+        Properties:
+            CidrBlock: 10.0.0.0/16
+            EnableDnsHostnames: true
+
+
