@@ -1,0 +1,122 @@
+Description:
+    Marcelo Cardozo - VPN Network Stack to connect On Premise Infrastructure to AWS VPC
+
+Parameters:
+    EnvironmentName:
+        Description: Environment prefixed to each resource
+        Type: String
+
+    VpcCIDR:
+        Description: IP Range for the Cloud Infrastructure
+        Type: String
+        Default: 10.0.0.0/16
+
+    PrivateSubnet1CIDR:
+        Description: IP range (CIDR notation) for the private subnet in the first Availability Zone
+        Type: String
+        Default: 10.0.2.0/24
+
+    PrivateSubnet2CIDR:
+        Description: IP range (CIDR notation) for the private subnet in the second Availability Zone
+        Type: String
+        Default: 10.0.3.0/24
+
+    CustomerGatewayIP:
+        Description: Static IP of the Customer Gateway
+        Type: String
+        Default: 1.2.3.4
+
+Resources:
+    VPC:
+        Type: AWS::EC2::VPC
+        Properties:
+            CidrBlock: !Ref VpcCIDR
+            EnableDnsHostnames: true
+            Tags:
+                -   Key: Name
+                    Value: !Ref EnvironmentName
+
+    CustomerGateway:
+        Type: AWS::EC2::CustomerGateway
+        Properties:
+            BgpAsn: 65000
+            IpAddress: !Ref CustomerGatewayIP
+            Type: ipsec.1
+            Tags:
+                -   Key: Name
+                    Value: !Sub ${EnvironmentName} Customer Gateway
+
+    VPNGateway:
+        Type: AWS::EC2::VPNGateway
+        Properties:
+            Type: ipsec.1
+            Tags:
+                -   Key: Name
+                    Value: !Sub ${EnvironmentName} Virtual Private Gateway
+
+    VPNGatewayAttachment:
+        Type: AWS::EC2::VPCGatewayAttachment
+        Properties:
+            VpcId: !Ref VPC
+            VpnGatewayId: !Ref VPNGateway
+
+    VPNConnection:
+        Type: AWS::EC2::VPNConnection
+        Properties:
+            Type: ipsec.1
+            StaticRoutesOnly: true
+            CustomerGatewayId: !Ref CustomerGateway
+            VpnGatewayId: !Ref VPNGateway
+            Tags:
+                  -   Key: Name
+                      Value: !Sub ${EnvironmentName} VPN Connection
+
+    PrivateSubnet1:
+        Type: AWS::EC2::Subnet
+        Properties:
+            VpcId: !Ref VPC
+            AvailabilityZone: !Select [ 0, !GetAZs '' ]
+            CidrBlock: !Ref PrivateSubnet1CIDR
+            MapPublicIpOnLaunch: false
+            Tags:
+                -   Key: Name
+                    Value: !Sub ${EnvironmentName} Private Subnet (AZ1)
+
+    PrivateSubnet2:
+        Type: AWS::EC2::Subnet
+        Properties:
+            VpcId: !Ref VPC
+            AvailabilityZone: !Select [ 1, !GetAZs '' ]
+            CidrBlock: !Ref PrivateSubnet2CIDR
+            MapPublicIpOnLaunch: false
+            Tags:
+                  -   Key: Name
+                      Value: !Sub ${EnvironmentName} Private Subnet (AZ2)
+
+    VPNRouteTable:
+        Type: AWS::EC2::RouteTable
+        Properties:
+            VpcId: !Ref VPC
+            Tags:
+                -   Key: Name
+                    Value: !Sub ${EnvironmentName} Routes
+
+    VPNRoute:
+        Type: AWS::EC2::Route
+        DependsOn: VPNGatewayAttachment
+        Properties:
+            RouteTableId: !Ref VPNRouteTable
+            DestinationCidrBlock: 0.0.0.0/0
+            GatewayId: !Ref VPNGateway
+
+    Subnet1RouteTableAssociation:
+        Type: AWS::EC2::SubnetRouteTableAssociation
+        Properties:
+            RouteTableId: !Ref VPNRouteTable
+            SubnetId: !Ref PrivateSubnet1
+
+    Subnet2RouteTableAssociation:
+        Type: AWS::EC2::SubnetRouteTableAssociation
+        Properties:
+            RouteTableId: !Ref VPNRouteTable
+            SubnetId: !Ref PrivateSubnet2
