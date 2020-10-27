@@ -1,0 +1,31 @@
+Description:
+    Marcelo Cardozo | Deployment of public S3 bucket
+
+Parameters:
+    EnvironmentName:
+        Description: Environment prefixed to each resource
+        Type: String
+
+Resources:
+    S3Bucket:
+        Type: AWS::S3::Bucket
+        Properties:
+            BucketName: marcelor-bucket
+            AccessControl: PublicRead
+    BucketPolicy:
+        Type: AWS::S3::BucketPolicy
+        Properties:
+            PolicyDocument:
+                Id: MyPolicy
+                Version: 2012-10-17
+                Statement:
+                    - Sid: PublicReadForGetBucketObjects
+                      Effect: Allow
+                      Principal: '*'
+                      Action: 's3:GetObject'
+                      Resource: !Join
+                          - ''
+                          - - 'arn:aws:s3:::'
+                            - !Ref S3Bucket
+                            - /*
+            Bucket: !Ref S3Bucket
