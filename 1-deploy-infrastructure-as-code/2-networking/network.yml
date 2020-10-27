@@ -208,6 +208,12 @@ Outputs:
         Export:
             Name: !Sub ${EnvironmentName}-VPCID
 
+    VPCDefaultSecurityGroup:
+        Description: DefaultSecurityGroup of the VPC
+        Value: !GetAtt VPC.DefaultSecurityGroup
+        Export:
+            Name: !Sub ${EnvironmentName}-VPC-DefaultSecurityGroup
+
     VPCPublicRouteTable:
         Description: Public Routing
         Value: !Ref PublicRouteTable
