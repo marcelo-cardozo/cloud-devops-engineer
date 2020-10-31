@@ -13,3 +13,9 @@ Resources:
         Type: AWS::S3::Bucket
         Properties:
             BucketName: !Ref BucketName
+Outputs:
+    S3Bucket:
+        Description: A reference to the created S3 Bucket
+        Value: !Ref S3Bucket
+        Export:
+            Name: !Sub ${EnvironmentName}-BUCKET

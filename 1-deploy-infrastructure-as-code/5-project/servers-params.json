@@ -1,0 +1,14 @@
+[
+  {
+    "ParameterKey": "EnvironmentName",
+    "ParameterValue": "UdagramProject"
+  },
+  {
+    "ParameterKey": "ScalingMinServers",
+    "ParameterValue": "1"
+  },
+  {
+    "ParameterKey": "ScalingMaxServers",
+    "ParameterValue": "4"
+  }
+]
