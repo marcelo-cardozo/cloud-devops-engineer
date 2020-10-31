@@ -1,0 +1,21 @@
+Description:
+    Marcelo Cardozo | Deployment of S3 bucket
+
+Parameters:
+    EnvironmentName:
+        Description: Environment prefixed to each resource
+        Type: String
+    BucketName:
+        Description: Name of the bucket to be deployed
+        Type: String
+Resources:
+    S3Bucket:
+        Type: AWS::S3::Bucket
+        Properties:
+            BucketName: !Ref BucketName
+Outputs:
+    S3Bucket:
+        Description: A reference to the created S3 Bucket
+        Value: !Ref S3Bucket
+        Export:
+            Name: !Sub ${EnvironmentName}-BUCKET

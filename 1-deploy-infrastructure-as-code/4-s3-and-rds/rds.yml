@@ -1,0 +1,71 @@
+Description:
+    Marcelo Cardozo | Deployment of Aurora Cluster with 2 instances. Aurora automatically replicates its storage accross all AZs
+
+Parameters:
+    EnvironmentName:
+        Description: Environment prefixed to each resource
+        Type: String
+    DatabaseUsername:
+        Description: Username of the DBCluster
+        Type: String
+    DatabasePassword:
+        Description: Password of the DBCluster
+        Type: String
+
+Resources:
+    PrivateDBSubnetGroup:
+        Type: "AWS::RDS::DBSubnetGroup"
+        Properties:
+            DBSubnetGroupDescription: description
+            SubnetIds:
+                -   Fn::ImportValue:
+                        Fn::Sub: "${EnvironmentName}-PRI1-SN"
+                -   Fn::ImportValue:
+                        Fn::Sub: "${EnvironmentName}-PRI2-SN"
+            Tags:
+                -   Key: Name
+                    Value: !Sub ${EnvironmentName} PrivateDBSubnetGroup
+
+    DatabaseCluster:
+        Type: AWS::RDS::DBCluster
+        Properties:
+            Engine: aurora
+            MasterUsername: !Ref DatabaseUsername
+            MasterUserPassword: !Ref DatabasePassword
+            DatabaseName: demodb
+            Port: 3306
+            DBSubnetGroupName: !Ref PrivateDBSubnetGroup
+            VpcSecurityGroupIds:
+                -   Fn::ImportValue:
+                        Fn::Sub: "${EnvironmentName}-VPC-DefaultSecurityGroup"
+            Tags:
+                -   Key: Name
+                    Value: !Sub ${EnvironmentName} Database Cluster
+
+    DatabasePrimaryInstance:
+        Type: AWS::RDS::DBInstance
+        Properties:
+            AllowMajorVersionUpgrade: false
+            AutoMinorVersionUpgrade: true
+            Engine: aurora
+            DBClusterIdentifier: !Ref DatabaseCluster
+            DBInstanceClass: db.t2.small
+            DBSubnetGroupName: !Ref PrivateDBSubnetGroup
+            PubliclyAccessible: true
+            Tags:
+                  -   Key: Name
+                      Value: !Sub ${EnvironmentName} Demo Database
+
+    DatabaseReplicaInstance:
+        Type: AWS::RDS::DBInstance
+        Properties:
+            AllowMajorVersionUpgrade: false
+            AutoMinorVersionUpgrade: true
+            Engine: aurora
+            DBClusterIdentifier: !Ref DatabaseCluster
+            DBInstanceClass: db.t2.small
+            DBSubnetGroupName: !Ref PrivateDBSubnetGroup
+            PubliclyAccessible: true
+            Tags:
+                -   Key: Name
+                    Value: !Sub ${EnvironmentName} Demo Database
