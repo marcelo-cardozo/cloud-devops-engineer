@@ -1,0 +1,33 @@
+version: '3'
+services:
+    prometheus:
+        container_name: prometheus
+        image: bitnami/prometheus:latest
+        ports:
+            - "9090:9090"
+        volumes:
+            - ./prometheus.yml:/opt/bitnami/prometheus/conf/prometheus.yml
+        networks:
+            - net
+
+    node_exporter:
+        container_name: node_exporter
+        image: linuxkit/node_exporter:v0.8
+        ports:
+            - "9100:9100"
+        volumes:
+            - /proc:/host/proc:ro
+            - /sys:/host/sys:ro
+        networks:
+            - net
+
+    grafana:
+        container_name: grafana
+        image: grafana/grafana
+        ports:
+            - "3000:3000"
+        networks:
+            - net
+
+networks:
+    net:
