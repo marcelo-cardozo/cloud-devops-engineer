@@ -5,8 +5,14 @@ FROM jenkins/jenkins:lts
 USER root
 
 RUN apt-get update
-RUN apt-get install -y python3-pip
-RUN pip3 install boto
+RUN apt-get install -y software-properties-common
+RUN echo "deb http://ppa.launchpad.net/ansible/ansible/ubuntu trusty main">> /etc/apt/sources.list
+RUN apt-key adv --keyserver keyserver.ubuntu.com --recv-keys 93C4A3FD7BB9C367
+RUN apt-get update
 RUN apt-get install -y ansible
+RUN ansible-galaxy collection install community.aws
+
+RUN apt-get install -y python-pip
+RUN pip install boto
 
 USER jenkins
