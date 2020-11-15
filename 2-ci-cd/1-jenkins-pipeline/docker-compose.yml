@@ -1,0 +1,19 @@
+version: '3'
+services: 
+    jenkins:
+        container_name: jenkins
+        build:
+          context: .
+          args:
+            HOST_UID: 1001
+            HOST_GID: 998
+        ports: 
+            - "8080:8080"
+            - "50000:50000"
+        volumes: 
+            - ./jenkins_home:/var/jenkins_home
+            - /var/run/docker.sock:/var/run/docker.sock
+        networks: 
+            - net
+networks:
+    net:

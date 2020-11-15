@@ -1,0 +1,11 @@
+---
+# Install Nginx
+-   name: Install Nginx
+    hosts: [localhost]
+    connection: local
+    become: True
+    become_user: root
+    tasks:
+        -   name: install nginx
+            include_role:
+                name: nginx
